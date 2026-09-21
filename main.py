@@ -19,16 +19,16 @@ import httpx
 import logging
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
-logger = logging.getLogger("X4G")
+logger = logging.getLogger("Gateway")
 
 IRAN_TZ = ZoneInfo("Asia/Tehran")
 
-app = FastAPI(title="X4G", docs_url=None, redoc_url=None)
+app = FastAPI(title="Gateway", docs_url=None, redoc_url=None)
 
 # ── Persistence ───────────────────────────────────────────────────────────────
 DATA_DIR = Path(os.environ.get("DATA_DIR", "/data"))
-DATA_FILE = DATA_DIR / "x4g_state.json"
-SECRET_FILE = DATA_DIR / "x4g_secret.key"
+DATA_FILE = DATA_DIR / "gateway_state.json"
+SECRET_FILE = DATA_DIR / "gateway_secret.key"
 SAVE_LOCK = asyncio.Lock()
 
 def _load_or_create_secret() -> str:
@@ -149,13 +149,13 @@ def log_activity(kind: str, message: str, level: str = "info"):
     })
 
 # ── Auth ──────────────────────────────────────────────────────────────────────
-SESSION_COOKIE = "x4g_session"
+SESSION_COOKIE = "gateway_session"
 SESSION_TTL = 60 * 60 * 24 * 365
 
 def hash_password(pw: str) -> str:
     return hashlib.sha256(f"{pw}{CONFIG['secret']}".encode()).hexdigest()
 
-AUTH = {"password_hash": hash_password(os.environ.get("ADMIN_PASSWORD", "X4GKING"))}
+AUTH = {"password_hash": hash_password(os.environ.get("ADMIN_PASSWORD", "admin"))}
 SESSIONS: dict = {}
 SESSIONS_LOCK = asyncio.Lock()
 
@@ -201,7 +201,7 @@ async def startup():
     await load_state()
     await _tg_start_bot()
     log_activity("system", "سرور راه‌اندازی شد", "ok")
-    logger.info(f"X4G v9.5 started on port {CONFIG['port']}")
+    logger.info(f"Gateway v11 started on port {CONFIG['port']}")
 
 @app.on_event("shutdown")
 async def shutdown():
@@ -234,7 +234,7 @@ def now_ir() -> datetime:
 def generate_vless_link(
     uuid: str,
     host: str,
-    remark: str = "X4G",
+    remark: str = "Gateway",
     protocol: str = DEFAULT_PROTOCOL,
     fingerprint: str | None = None,
     alpn: str | None = None,
@@ -285,7 +285,7 @@ def vless_link_for_link(link: dict, uid: str, host: str) -> str:
     proto = link.get("protocol", DEFAULT_PROTOCOL)
     return generate_vless_link(
         uid, host,
-        remark=f"X4G-{link.get('label','')}",
+        remark=f"Gateway-{link.get('label','')}",
         protocol=proto,
         fingerprint=link.get("fingerprint"),
         alpn=link.get("alpn"),
@@ -408,7 +408,7 @@ async def ensure_default_link():
 # ── Basic endpoints ───────────────────────────────────────────────────────────
 @app.get("/")
 async def root():
-    return {"service": "X4G", "version": "9.5", "status": "active", "channel": "https://t.me/Farajian2004f"}
+    return {"service": "Gateway", "version": "11", "status": "active", "channel": ""}
 
 @app.get("/health")
 async def health():
@@ -426,7 +426,7 @@ async def subscription_single(uuid: str, request: Request):
     vless = vless_link_for_link(link, uuid, host)
     content = base64.b64encode(vless.encode()).decode()
     return Response(content=content, media_type="text/plain",
-                    headers={"profile-title": quote(link["label"]), "support-url": "https://t.me/Farajian2004f"})
+                    headers={"profile-title": quote(link["label"]), "support-url": ""})
 
 @app.get("/sub-all")
 async def subscription_all(request: Request, _=Depends(require_auth)):
@@ -584,7 +584,7 @@ async def sub_group_subscription(uuid_key: str, request: Request):
         media_type="text/plain",
         headers={
             "profile-title": quote(sub["name"]),
-            "support-url": "https://t.me/Farajian2004f",
+            "support-url": "",
             "profile-update-interval": "12",
         }
     )
