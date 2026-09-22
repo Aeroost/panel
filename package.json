@@ -1,0 +1,26 @@
+{
+  "name": "gateway-panel-cloudflare",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cloudflare Worker control plane for Gateway",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "typecheck": "tsc --noEmit",
+    "deploy": "wrangler deploy",
+    "db:create": "wrangler d1 create panel-db",
+    "db:apply": "wrangler d1 execute panel-db --remote --file=schema.sql",
+    "state:import": "node scripts/import-state.mjs",
+    "kv:create": "wrangler kv namespace create TEMP",
+    "check": "npm run typecheck"
+  },
+  "dependencies": {
+    "@tabler/icons-webfont": "^3.19.0",
+    "qrcode-generator": "^2.0.4"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260922.1",
+    "typescript": "^5.9.2",
+    "wrangler": "^4.37.0"
+  }
+}
